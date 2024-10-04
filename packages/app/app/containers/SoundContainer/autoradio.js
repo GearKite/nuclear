@@ -156,7 +156,7 @@ function isTrackInQueue (track) {
 }
 
 function getSimilarTracks (currentSong, limit = 100) {
-  return lastfm.getSimilarTracks(currentSong.artist, currentSong.name, limit)
+  return lastfm.getSimilarTracks(_.get(currentSong.artist, 'name', currentSong.artist), currentSong.name, limit)
     .then(tracks => tracks.json())
     .then(trackJson => {
       return _.get(trackJson, 'similartracks.track', []);
@@ -165,7 +165,7 @@ function getSimilarTracks (currentSong, limit = 100) {
 
 function getTracksFromSimilarArtist (artist) {
   return lastfm
-    .getArtistInfo(artist)
+    .getArtistInfo(_.get(artist, 'name', artist))
     .then(artist => artist.json())
     .then(artistJson => getSimilarArtists(artistJson))
     .then(similarArtists => {
