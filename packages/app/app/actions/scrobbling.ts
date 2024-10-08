@@ -1,6 +1,8 @@
 import electron from 'electron';
 import { store } from '@nuclear/core';
 import { rest } from '@nuclear/core';
+import _ from 'lodash';
+
 
 import { Scrobbling } from './actionTypes';
 import globals from '../globals';
@@ -104,6 +106,7 @@ export function disableScrobbling() {
 }
 
 export function scrobbleAction(artist, track, session) {
+  artist = _.isString(artist) ? artist : artist.name
   return dispatch => {
     lastfm.scrobble(artist, track, session)
       .then(() => {
