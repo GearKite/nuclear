@@ -1,5 +1,6 @@
 import md5 from 'md5';
 import { LastFmArtistInfo, LastfmAlbum, LastfmArtistShort, LastfmTag, LastfmTrackMatch } from './Lastfm.types';
+import _ from 'lodash';
 
 const scrobblingApiUrl = 'https://ws.audioscrobbler.com/2.0/';
 
@@ -33,13 +34,18 @@ class LastFmApi {
     return fetch(this.prepareUrl(scrobblingApiUrl + '?method=auth.getSession&token=' + authToken) + '&format=json');
   }
 
-  scrobble(artist: string, track: string, session: string): Promise<Response> {
+  getArtistName(artist): string {
+    return _.get(artist, 'name', artist)
+  }
+
+  scrobble(artist: string | object, track: string, session: string): Promise<Response> {
+    console.log(this, artist, this.getArtistName(artist))
     return fetch(this.prepareUrl(
       scrobblingApiUrl +
       '?method=track.scrobble&sk=' +
       session +
       '&artist=' +
-      encodeURIComponent(artist) +
+      encodeURIComponent(this.getArtistName(artist)) +
       '&track=' +
       encodeURIComponent(track) +
       '&timestamp=' +
@@ -50,13 +56,14 @@ class LastFmApi {
     );
   }
 
-  updateNowPlaying(artist: string, track: string, session: string): Promise<Response> {
+  updateNowPlaying(artist: string | object, track: string, session: string): Promise<Response> {
+    console.log(this, artist, this.getArtistName(artist))
     return fetch(this.prepareUrl(
       scrobblingApiUrl +
       '?method=track.updateNowPlaying&sk=' +
       session +
       '&artist=' +
-      encodeURIComponent(artist) +
+      encodeURIComponent(this.getArtistName(artist)) +
       '&track=' +
       encodeURIComponent(track)),
     {
@@ -65,20 +72,22 @@ class LastFmApi {
     );
   }
 
-  getArtistInfo(artist: string): Promise<Response> {
+  getArtistInfo(artist: string | object): Promise<Response> {
+    console.log(this, artist, this.getArtistName(artist))
     return fetch(this.addApiKey(
       scrobblingApiUrl +
       '?method=artist.getinfo&artist=' +
-      encodeURIComponent(artist) +
+      encodeURIComponent(this.getArtistName(artist)) +
       '&format=json'
     ));
   }
 
-  getArtistTopTracks(artist: string): Promise<Response> {
+  getArtistTopTracks(artist: string | object): Promise<Response> {
+    console.log(this, artist, this.getArtistName(artist))
     return fetch(this.addApiKey(
       scrobblingApiUrl +
       '?method=artist.gettoptracks&artist=' +
-      encodeURIComponent(artist) +
+      encodeURIComponent(this.getArtistName(artist)) +
       '&format=json'
     ));
   }
@@ -144,11 +153,11 @@ class LastFmApi {
     ));
   }
 
-  getSimilarTracks(artist: string, track: string, limit = 100): Promise<Response> {
+  getSimilarTracks(artist: string | object, track: string, limit = 100): Promise<Response> {
     return fetch(this.addApiKey(
       scrobblingApiUrl +
       '?method=track.getSimilar&format=json&artist=' +
-      artist +
+      this.getArtistName(artist) +
       '&track=' +
       track +
       '&limit=' +
